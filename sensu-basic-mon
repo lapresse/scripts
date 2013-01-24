@@ -2,6 +2,8 @@
 #
 # As my coworker often says: who monitors the monitoring?
 #
+# Or: Quis custodiet ipsos custodes?
+#
 # Basic monitoring of Sensu via the VIA. Meant to be run as a cron job.
 # This script is meant to be run as a CRON.
 #
