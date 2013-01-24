@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+#
+# As my coworker often says: who monitors the monitoring?
+#
+# Basic monitoring of Sensu via the VIA. Meant to be run as a cron job.
+# This script is meant to be run as a CRON.
+#
+# Written by Jean-Francois Theroux <jtheroux@lapresse.ca>
+
+require "rubygems"
+require "net/http"
+require "json"
+
+mailto = "sensu@lapresse.pagerduty.com"
+sensu_host = "localhost"
+sensu_port = "4567"
+fqdn = `hostname -f`.chomp()
+pid_file = '/var/run/sensu/sensu-server.pid' # Location set by the official sensu-chef cookbook.
+
+# API/Redis/RabbitMQ monitoring
+begin
+  res = Net::HTTP.get_response(URI("http://#{sensu_host}:#{sensu_port}/info"))
+  if JSON.parse(res.body)["health"]["redis"] == "down"
+    puts "Redis is down on #{fqdn}!"
+  end
+
+  if JSON.parse(res.body)["health"]["rabbitmq"] == "down"
+    puts "RabbitMQ is down on #{fqdn}!"
+  end
+rescue Errno::ECONNREFUSED
+  puts "Sensu API is down on #{fqdn}! Redis and RabbitMQ might be down as well."
+end
+
+# Server process monitoring
+begin
+  Process.kill(0, File.read(pid_file).to_i)
+rescue Errno::EPERM
+  puts "You should run this script as root!"
+rescue Errno::ESRCH
+  puts "Sensu-server is down on #{fqdn}!"
+rescue Errno::ENOENT
+  puts "Sensu-server is down on #{fqdn}!"
+end
