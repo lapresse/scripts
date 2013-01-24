@@ -13,7 +13,6 @@ require "rubygems"
 require "net/http"
 require "json"
 
-mailto = "someone@somedomain.com"
 sensu_host = "localhost"
 sensu_port = "4567"
 fqdn = `hostname -f`.chomp()
